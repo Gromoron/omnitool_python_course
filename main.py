@@ -1,5 +1,5 @@
-# there will be some code...
 import os
+
 from helpers.fastq import (
     read_fastq,
     write_fastq,
@@ -7,8 +7,8 @@ from helpers.fastq import (
     check_length,
     check_quality,
 )
-from helpers import convert_multiline_fasta_to_oneline
-from helpers import parse_blast_output
+from helpers.convert_multiline_fasta_to_oneline import parse_multiline_fasta
+from helpers.parse_blast_output import parse_blast_output as get_blast_descriptions
 
 
 def filter_fastq(
@@ -25,10 +25,11 @@ def filter_fastq(
     # Создаем папку filtered, если она еще не создана
     os.makedirs("filtered", exist_ok=True)
     output_path = os.path.join("filtered", output_fastq)
-    # держим в памяти и записываем каждый рид по очереди, не перегружая память компьютера.
+
+    # Записываем каждый рид по очереди, не перегружая память компьютера
     with open(output_path, "w", encoding="utf-8") as out_file:
         for header, seq, comment, qual in read_fastq(input_fastq):
-            # если какая то проверка не пройдена, то цикл переходит к следующему риду, вместо записи текущего.
+            # Если какая-то проверка не пройдена, переходим к следующему риду
             if not check_length(seq, length_bounds):
                 continue
             if not check_gc(seq, gc_bounds):
@@ -40,35 +41,34 @@ def filter_fastq(
             write_fastq(out_file, header, seq, comment, qual)
 
 
-# проверка запуска из терминала или же через Python script
-if __name__ == "__main__":
-    pass
-
-
 def convert_multiline_fasta_to_oneline(input_fasta, output_fasta=None):
     """
     Конвертирует многострочный FASTA в однострочный.
     Если output_fasta не указан, создаёт файл с суффиксом 'singlelined.fasta'.
     """
-    # используем входное имя, если не было указано иное для output
     if output_fasta is None:
         base_name, _ = os.path.splitext(input_fasta)
         output_fasta = f"{base_name}singlelined.fasta"
 
-    # Открываем выходной файл и потоково записываем склеенные последовательности
+    # Потоково записываем склеенные последовательности
     with open(output_fasta, "w", encoding="utf-8") as out_file:
         for header, sequence in parse_multiline_fasta(input_fasta):
             out_file.write(f"{header}\n{sequence}\n")
 
 
-def parse_blast_output(input_fasta, output_fasta):
+def parse_blast_output(input_file, output_file):
     """
-    Читает txt-файл BLAST, извлекает описания лучших хитов для заданных query последовательностей, сортирует их по алфавиту и записывает в output_file.
+    Читает txt-файл BLAST, извлекает описания лучших хитов для заданных query
+    последовательностей, сортирует их по алфавиту и записывает в output_file.
     """
-    descriptions = parse_blast_output(input_fasta)
-
+    descriptions = get_blast_descriptions(input_file)
     descriptions.sort()
 
     with open(output_file, "w", encoding="utf-8") as out:
         for desc in descriptions:
             out.write(f"{desc}\n")
+
+
+# проверка запуска из терминала или же через Python script
+if __name__ == "__main__":
+    pass

@@ -1,35 +1,24 @@
 def parse_blast_output(input_fasta):
-    annot = []
-    seq_header = False
+    descriptions = []
+    in_table = False
 
     with open(input_fasta, "r", encoding="utf-8") as file:
         for line in file:
             if "Sequences producing significant alignments:" in line:
-                seq_header = True
+                in_table = True
                 continue
 
-            # Если есть заголовок, то ищем первую строку с последовательностью
-            if seq_header:
-                clean_line = line.strip()
+            if not in_table:
+                continue
 
-                # Пропускаем пустые строки или строку заголовка таблицы 'Description'
-                if not clean_line or clean_line.startswith("Description"):
-                    continue
+            line = line.strip()
+            if not line or line.startswith("Description"):
+                continue
 
-                # пропустить все строки если не было совпадений
-                if "No hits found" in clean_line:
-                    seq_header = False
-                    continue
+            if "No hits found" not in line:
+                description, _score, _evalue = line.rsplit(None, 2)
+                descriptions.append(description)
 
-                # Первая содержательная строка — это лучшее совпадение!
-                # В выводе BLAST описание занимает первые ~66-67 символов строки,
-                # после чего идут пробелы и колонки Score / E-value.
-                # Срезаем первые 66 символов (или берем всю строку, если она короче):
-                desc = clean_line[:66].strip()
-                descriptions.append(desc)
-
-                # Сбрасываем флаг: для текущего Query лучший хит найден,
-                # ждем следующего 'Sequences producing significant alignments:'
-                seq_header = False
+            in_table = False
 
     return descriptions

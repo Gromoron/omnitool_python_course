@@ -1,33 +1,25 @@
-def convert_multiline_fasta_to_oneline(input_fasta, output_fasta):
-    current_header = None
-    seq_parts = []
+def parse_multiline_fasta(input_fasta):
+    """
+    Генератор: читает FASTA-файл и по очереди отдаёт пары (header, sequence),
+    где sequence - вся последовательность записи одной строкой.
+    Пустые строки пропускаются.
+    """
+    header = None
+    parts = []
 
-    with open (input_fasta, "r", encoding = "utf-8") as input:
-        for line in input:
+    with open(input_fasta, encoding="utf-8") as file:
+        for line in file:
             line = line.strip()
             if not line:
-                continue  
+                continue
             if line.startswith(">"):
-                if current_header is not None:
-                    yield current_header, "".join(seq_parts)
-                current_header = line
-                seq_parts = []
+                if header is not None:
+                    yield header, "".join(parts)
+                header = line
+                parts = []
             else:
-                seq_parts.append(line) 
-        if current_header is not None:
-            yield current_header, "".join(seq_parts)
- 
+                parts.append(line)
 
-
-
-
-
-
-
-
-   for each fasta sequence starting with >:
-    if space in (input_fasta):
-        remove the space symbols
-     else:
-        continue
-    with open (output_fasta), "w" as out_file
+    # Последняя запись в файле
+    if header is not None:
+        yield header, "".join(parts)
