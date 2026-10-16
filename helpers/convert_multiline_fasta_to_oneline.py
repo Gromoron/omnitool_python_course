@@ -1,6 +1,6 @@
 def parse_multiline_fasta(input_fasta):
     """
-    Генератор: читает FASTA-файл и по очереди отдаёт пары (header, sequence),
+    читает FASTA файл и по очереди отдает пары (header, sequence),
     где sequence - вся последовательность записи одной строкой.
     Пустые строки пропускаются.
     """
