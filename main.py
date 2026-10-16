@@ -48,9 +48,9 @@ def convert_multiline_fasta_to_oneline(input_fasta, output_fasta=None):
     """
     if output_fasta is None:
         base_name, _ = os.path.splitext(input_fasta)
-        output_fasta = f"{base_name}singlelined.fasta"
+        output_fasta = f"{base_name}_singlelined.fasta"
 
-    # Потоково записываем склеенные последовательности
+    # записываем соединенные последовательности
     with open(output_fasta, "w", encoding="utf-8") as out_file:
         for header, sequence in parse_multiline_fasta(input_fasta):
             out_file.write(f"{header}\n{sequence}\n")
