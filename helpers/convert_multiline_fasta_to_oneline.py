@@ -20,6 +20,5 @@ def parse_multiline_fasta(input_fasta):
             else:
                 parts.append(line)
 
-    # Последняя запись в файле
     if header is not None:
         yield header, "".join(parts)
